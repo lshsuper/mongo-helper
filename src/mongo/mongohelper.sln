@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mongo-helper", "mongo\mongo-helper.csproj", "{0423E227-5077-4601-8AA4-2D8A7775F87D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mongohelper", "mongo\mongohelper.csproj", "{0423E227-5077-4601-8AA4-2D8A7775F87D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
