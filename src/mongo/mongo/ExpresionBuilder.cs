@@ -12,15 +12,24 @@ namespace mongohelper
     /// <typeparam name="T"></typeparam>
     public class ExpresionBuilder<T> where T : class, new()
     {
+        /// <summary>
+        /// 初始化器
+        /// </summary>
+        public ExpresionBuilder(){}
 
-        public ExpresionBuilder()
-        {
+        #region +Builder-Options
+        private BinaryExpression Left { get; set; }  //左表达式
+        private BinaryExpression Right { get; set; } //右表达式
+        private string Tag { get; set; }  //对象标识参数（u=>u.Name,指的就是u的别名）
+        private ParameterExpression Parameter { get; set; } //参数对象
+        #endregion
 
-        }
-        private BinaryExpression Left { get; set; }
-        private BinaryExpression Right { get; set; }
-        private string Tag { get; set; }
-        private ParameterExpression Parameter { get; set; }
+        #region +Builder-Methods
+        /// <summary>
+        /// 设置别名
+        /// </summary>
+        /// <param name="tag"></param>
+        /// <returns></returns>
         public ExpresionBuilder<T> SetTag(string tag)
         {
             Tag = tag;
@@ -41,14 +50,15 @@ namespace mongohelper
                 Parameter = Expression.Parameter(typeof(T), Tag);
             }
             MemberExpression left = Expression.PropertyOrField(Parameter, key);
-            ConstantExpression right = Expression.Constant(value,left.Type);
+            ConstantExpression right = Expression.Constant(value, left.Type);
             BinaryExpression binary = Expression.MakeBinary(type, left, right);
             Right = binary;
 
             return this;
         }
+
         /// <summary>
-        /// 合并表达式
+        /// 合并前边构建好的表达式
         /// </summary>
         /// <param name="right"></param>
         /// <param name="type"></param>
@@ -71,8 +81,8 @@ namespace mongohelper
         /// <returns></returns>
         public Expression<Func<T, bool>> ToExpression()
         {
-           return Expression.Lambda<Func<T, bool>>(Left,Parameter);
-          
+            return Expression.Lambda<Func<T, bool>>(Left, Parameter);
+
         }
         /// <summary>
         /// 转换Lambda
@@ -82,5 +92,7 @@ namespace mongohelper
         {
             return Expression.Lambda<Func<T, bool>>(Left, Parameter).Compile();
         }
+        #endregion
+
     }
 }
