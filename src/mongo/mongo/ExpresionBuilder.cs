@@ -10,17 +10,17 @@ namespace mongohelper
     /// lambda表达式基础构建类
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class ExpresionBuilder<T> where T:class,new()
+    public class ExpresionBuilder<T> where T : class, new()
     {
 
         public ExpresionBuilder()
         {
-           
+
         }
-        private BinaryExpression Left { get;set; }
+        private BinaryExpression Left { get; set; }
         private BinaryExpression Right { get; set; }
-        private List<ParameterExpression> Params { get; set; }
         private string Tag { get; set; }
+        private ParameterExpression Parameter { get; set; }
         public ExpresionBuilder<T> SetTag(string tag)
         {
             Tag = tag;
@@ -36,11 +36,15 @@ namespace mongohelper
         public ExpresionBuilder<T> Build(string key, object value, ExpressionType type)
         {
             //PropertyInfo info=typeof(T).GetProperty(key);
-            ParameterExpression left = Expression.Parameter(value.GetType(), $"{Tag}.{key}");
-            ConstantExpression right = Expression.Constant(value);
+            if (Parameter == null)
+            {
+                Parameter = Expression.Parameter(typeof(T), Tag);
+            }
+            MemberExpression left = Expression.PropertyOrField(Parameter, key);
+            ConstantExpression right = Expression.Constant(value,left.Type);
             BinaryExpression binary = Expression.MakeBinary(type, left, right);
             Right = binary;
-           
+
             return this;
         }
         /// <summary>
@@ -48,7 +52,7 @@ namespace mongohelper
         /// </summary>
         /// <param name="right"></param>
         /// <param name="type"></param>
-        public ExpresionBuilder<T> Merge(ExpressionType type=ExpressionType.And)
+        public ExpresionBuilder<T> Merge(ExpressionType type = ExpressionType.And)
         {
             if (Left == null)
             {
@@ -56,7 +60,7 @@ namespace mongohelper
             }
             else
             {
-                BinaryExpression binary = Expression.MakeBinary(type, Left,Right);
+                BinaryExpression binary = Expression.MakeBinary(type, Left, Right);
                 Left = binary;
             }
             return this;
@@ -65,12 +69,18 @@ namespace mongohelper
         /// 转换表达式
         /// </summary>
         /// <returns></returns>
-        public Expression<Func<T, bool>> ToLambda()
+        public Expression<Func<T, bool>> ToExpression()
         {
+           return Expression.Lambda<Func<T, bool>>(Left,Parameter);
           
-           
-            return Expression.Lambda<Func<T, bool>>(Left, Expression.Parameter(typeof(T), Tag));
         }
-
+        /// <summary>
+        /// 转换Lambda
+        /// </summary>
+        /// <returns></returns>
+        public Func<T, bool> ToLambda()
+        {
+            return Expression.Lambda<Func<T, bool>>(Left, Parameter).Compile();
+        }
     }
 }
